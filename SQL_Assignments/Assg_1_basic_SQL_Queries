@@ -1,0 +1,108 @@
+USE WAREHOUSE COMPUTE_WH ;
+USE DATABASE RAJNI ;
+
+CREATE OR REPLACE TABLE Sales_Final_Data
+( order_id varchar(30),
+order_date date,                                                                                                                    
+ship_date date,
+ship_mode varchar(20),
+customer_name varchar(30),
+segment varchar(30),
+state varchar(60),
+country varchar(50),
+market varchar(10),
+region varchar(15),
+product_id varchar(30),
+category varchar(25),
+sub_category varchar(25),
+product_name varchar(300),
+sales number(20,0),
+quantity int,
+discount float,
+profit float,
+shipping_cost float,
+order_priority varchar(25),
+year number(10,0));
+
+/*table is successfully created and also we have loaded te data in it */
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------
+
+--  1st question: SET PRIMARY KEY:
+
+ALTER TABLE SALES_FINAL_DATA 
+ADD primary key(order_id) ;
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
+--2nd question : CHECK THE ORDER DATE AND SHIP DATE TYPE AND THINK IN WHICH DATA TYPE YOU HAVE TO CHANGE.
+
+
+CREATE OR REPLACE TABLE KI_SALES_DATA_COPY AS
+SELECT*,
+TO_CHAR(DATE(ORDER_DATE, 'MM-DD-YYYY' ), 'YYYY-MM-DD') AS ORDER DATE2 
+FROM KI_SALES_DATA_COPY;
+CREATE OR REPLACE TABLE KI_SALES_DATA_COPY AS
+SELECT*,
+TO_CHAR(DATE(SHIP_DATE, 'MM-DD-YYYY), YYYY-MM-DD') AS SHIP_DATE2 
+FROM KI SALES.DATA_COPY;
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+--3rd question : EXTRACT THE LAST NUMBER AFTER THE - AND CREATE OTHER COLUMN AND UPDATE IT.
+
+select * , substring(order_id, 9,15) AS ORDER_INITIALS from SALES_FINAL_DATA;
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+--4th question : FLAG ,IF DISCOUNT IS GREATER THEN 0 THEN  YES ELSE FALSE AND PUT IT IN NEW COLUMN FRO EVERY ORDER ID.
+
+
+SELECT discount,
+  CASE
+    WHEN discount > 0 THEN 'YES'
+    ELSE 'FALSE'
+  END AS flag
+FROM sales_final_data;
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+--5th question : FIND OUT THE FINAL PROFIT AND PUT IT IN COLUMN FOR EVERY ORDER ID.
+
+
+SELECT
+SUM(PROFIT) FROM sales_final_data AS OVERALL_PROFT;
+
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+--6th question : FIND OUT HOW MUCH DAYS TAKEN FOR EACH ORDER TO PROCESS FOR THE SHIPMENT FOR EVERY ORDER ID.
+
+
+SELECT 
+  order_id,
+  DATEDIFF(DAY, order_date, ship_date) AS days_taken_for_shipment
+FROM 
+  sales_final_data;
+
+------------------------------------------------------------------------------------------------------------------------------------
+
+-- 7th question: FLAG THE PROCESS DAY AS BY RATING IF IT TAKES LESS OR EQUAL 3  DAYS MAKE 5,LESS OR EQUAL THAN 6 DAYS BUT MORE THAN 
+
+    3 MAKE 4,LESS THAN 10 BUT MORE THAN 6 MAKE 3,MORE THAN 10 MAKE IT 2 FOR EVERY ORDER ID.--
+
+    
+select order_id,
+
+    datediff(DAY,order_date,ship_date) AS days_taken_for_shipment,
+    
+    CASE 
+      WHEN DATEDIFF(DAY, order_date, ship_date) <= 3 THEN 5
+      WHEN DATEDIFF(DAY, order_date, ship_date) <= 6 THEN 4
+      WHEN DATEDIFF(DAY, order_date, ship_date) <= 10 THEN 3
+      ELSE 2
+    END AS processing_day_rating
+FROM sales_final_data;
